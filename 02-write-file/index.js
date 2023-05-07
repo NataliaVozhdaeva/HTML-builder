@@ -21,17 +21,16 @@ output.write(question);
 async function foo() {
   const answer = await rl.question('');
 
-  process.on('exit', () => {
-    stdout.write(bayMsg);
-  });
-
   if (answer === 'exit') {
-    output.write(bayMsg);
     process.exit();
   }
 
   fsp.appendFile(filepath, answer + '\n');
   foo();
 }
+
+process.on('exit', () => {
+  stdout.write(bayMsg);
+});
 
 foo();
