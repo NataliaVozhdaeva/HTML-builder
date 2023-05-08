@@ -5,8 +5,6 @@ const baseDir = path.join(__dirname, 'files');
 const destDir = path.join(__dirname, 'files-copy');
 
 const copyDir = async function (src, dest) {
-  //const projectFolder = path.join(__dirname, 'files-copy');
-
   try {
     await fs.access(dest, constants.F_OK);
     await fs.rm(dest, { recursive: true }, (err) => {
