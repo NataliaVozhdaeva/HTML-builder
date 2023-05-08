@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const dirName = path.join(__dirname, 'secret-folder');
 
-const getInfo = function (file) {
+const result = function (file) {
   if (file.isFile()) {
     let data = [];
     fs.stat(path.resolve(__dirname, 'secret-folder', file.name), function (err, stats) {
@@ -22,6 +22,6 @@ fs.readdir(path.join(dirName), { withFileTypes: true }, function (err, files) {
     return console.log(err);
   }
   files.forEach((item) => {
-    getInfo(item);
+    result(item);
   });
 });
