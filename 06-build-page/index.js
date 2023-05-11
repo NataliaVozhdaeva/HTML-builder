@@ -1,44 +1,31 @@
-const { error } = require('console');
 const { promises: fs, constants } = require('fs');
 const path = require('path');
+const fsPromises = require('fs').promises;
 const filepathHTML = path.join(__dirname, 'project-dist', 'index.hlml');
 const destDir = path.join(__dirname, 'project-dist');
 const templateHTML = path.join(__dirname, 'template.html');
 const componentsDir = path.join(__dirname, 'components');
-//const writer = fs.createWriteStream(path.join(destDir, 'index.html'));
 
-const readHTMLFile = async function (filePath) {
-  try {
-    const data = await fs.readFile(filePath);
-    console.log(data.toString());
-  } catch (error) {
-    console.error(`Got an error trying to read the file: ${error.message}`);
-  }
-};
+const buildHTML = async function (source, target) {
+  await fs.copyFile(source, target);
 
-/* const writeHTMLFile = async function () {
-  try {
-    await fs.writeFile(filepathHTML);
-  } catch (error) {
-    console.error(`Got an error trying to write to a file: ${error.message}`);
-  }
-}; */
+  //const data = await fs.readFile(filepathHTML);
 
-const buildHTML = async function () {
-  //readHTMLFile(templateHTML);
-  // writeHTMLFile();
-  fs.writeFile(filepathHTML, '', (err) => {
-    if (err) throw err;
-  });
-  console.log(templateHTML);
-  try {
-    await copyFile(templateHTML.toString(), filepathHTML);
-    console.log(templateHTML);
-    console.log('file was copied to destination');
-  } catch {
-    console.log(templateHTML);
-    console.log('The file could not be copied');
+  let data = await fsPromises.readFile(filepathHTML);
+  const re = new RegExp(/{{[a-z]+}}/g);
+
+  const componentsList = data.toString().match(re);
+  //console.log(componentsList);
+
+  for (const el of componentsList) {
+    const elName = el.slice(2, -2);
+    const elData = await fsPromises.readFile(path.join(componentsDir, `${elName}.html`));
+    data = data.toString().replace(el, elData);
   }
+
+  /*  const result = data.toString().replace(re, 'aaa');*/
+
+  fs.writeFile(filepathHTML, data);
 };
 
 const buildPage = async function (dest) {
@@ -53,13 +40,7 @@ const buildPage = async function (dest) {
 
   await fs.mkdir(destDir, { recursive: true });
 
-  //const reader = fs.createReadStream(templateHTML);
-
-  /* reader.on('data', function (chunk) {
-    writer.write(chunk);
-  }); */
-
-  buildHTML();
+  buildHTML(templateHTML, filepathHTML);
 };
 
 buildPage(destDir);
