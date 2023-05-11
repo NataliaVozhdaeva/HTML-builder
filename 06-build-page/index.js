@@ -6,6 +6,8 @@ const destDir = path.join(__dirname, 'project-dist');
 const templateHTML = path.join(__dirname, 'template.html');
 const componentsDir = path.join(__dirname, 'components');
 const stylesDir = path.join(__dirname, 'styles');
+const assetsDir = path.join(__dirname, 'assets');
+const projectAssetsDir = path.join(destDir, 'assets');
 
 const buildHTML = async function (source, target) {
   await fs.copyFile(source, target);
@@ -28,13 +30,31 @@ const buildCSS = async function (dir) {
   let files = await fsPromises.readdir(dir, { withFileTypes: true });
 
   files.forEach(async function (item) {
-    //console.log(item);
-
     const elData = await fsPromises.readFile(path.join(__dirname, 'styles', item.name));
-    // console.log(elData.toString());
-
     fsPromises.appendFile(path.join(destDir, 'style.css'), elData.toString());
   });
+};
+
+const copyDir = async function (src, dest) {
+  /*  try {
+    await fs.access(dest, constants.F_OK);
+    await fs.rm(dest, { recursive: true }, (err) => {
+      if (err) {
+        throw err;
+      }
+    });
+  } catch (error) {} */
+
+  await fs.mkdir(dest, { recursive: true });
+
+  let entries = await fs.readdir(src, { withFileTypes: true });
+
+  for (let entry of entries) {
+    let srcPath = path.join(src, entry.name);
+    let destPath = path.join(dest, entry.name);
+
+    entry.isDirectory() ? await copyDir(srcPath, destPath) : await fs.copyFile(srcPath, destPath);
+  }
 };
 
 const buildPage = async function (dest) {
@@ -49,6 +69,7 @@ const buildPage = async function (dest) {
 
   await fs.mkdir(destDir, { recursive: true });
 
+  copyDir(assetsDir, projectAssetsDir);
   buildHTML(templateHTML, filepathHTML);
   buildCSS(stylesDir);
 };
